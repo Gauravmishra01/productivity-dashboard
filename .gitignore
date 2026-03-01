@@ -40,3 +40,5 @@ coverage/
 # IDE
 .vscode/
 .idea/
+
+backend/prisma/dev.db
