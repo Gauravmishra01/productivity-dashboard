@@ -8,10 +8,10 @@ A full-stack web application that processes AI-generated CCTV activity data from
 
 | Item | Link |
 |---|---|
-| **GitHub Repository** | https://github.com/YOUR_USERNAME/productivity-dashboard |
-| **Live Web Application** | https://productivity-dashboard.vercel.app |
+| **GitHub Repository** | https://github.com/Gauravmishra01/productivity-dashboard |
+| **Live Web Application** | https://productivity-dashboard-eta-eight.vercel.app/ |
 
-> Replace the GitHub and Vercel URLs above with your actual deployed links.
+
 
 ---
 
@@ -82,8 +82,8 @@ The application is deployed across three free-tier cloud services:
 
 | Layer | Platform | URL |
 |---|---|---|
-| **Frontend** | [Vercel](https://vercel.com) | *(set after Vercel deploy)* |
-| **Backend** | [Render](https://render.com) | https://productivity-dashboard-su5r.onrender.com |
+| **Frontend** | [Vercel](https://productivity-dashboard-eta-eight.vercel.app/) |  |
+| **Backend** | [Render](https://productivity-dashboard-su5r.onrender.com) | https://productivity-dashboard-su5r.onrender.com |
 | **Database** | [Neon](https://neon.tech) | PostgreSQL — `neondb` on `us-east-1` |
 
 ### How it fits together
