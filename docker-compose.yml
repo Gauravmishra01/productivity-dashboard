@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/prisma:/app/prisma # Persists SQLite locally
+    environment:
+      - NODE_ENV=production
+    # Generates Prisma client, pushes schema, then starts server
+    command: sh -c "npx prisma generate && npx prisma db push && npm start"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:3001
+    depends_on:
+      - backend
