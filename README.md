@@ -4,6 +4,17 @@ A full-stack web application that processes AI-generated CCTV activity data from
 
 ---
 
+## Deliverables
+
+| Item | Link |
+|---|---|
+| **GitHub Repository** | https://github.com/YOUR_USERNAME/productivity-dashboard |
+| **Live Web Application** | https://productivity-dashboard.vercel.app |
+
+> Replace the GitHub and Vercel URLs above with your actual deployed links.
+
+---
+
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
@@ -292,3 +303,59 @@ Site C: Edge → Kafka → Backend → PostgreSQL
 ```
 
 Key additions at multi-site scale: tenant isolation (all schemas include `site_id`), network resilience (sites operate independently if the WAN link drops), and centralised model distribution (the model registry pushes updated weights to all edge devices simultaneously).
+
+---
+
+### 4. Worker Privacy, Consent, and Ethical Compliance
+
+A CCTV-based AI monitoring system has direct legal and ethical obligations. These must be designed in from the start, not retrofitted.
+
+**Data Minimisation at the Edge**
+The AI model runs on the edge device and emits only *derived labels* (`working`, `idle`, `product_count`) plus aggregate confidence scores — **never** raw video frames or biometric identifiers. Raw footage is never transmitted to the backend or persisted in the database. If raw imagery never leaves the camera cluster, a database breach cannot expose personal video data.
+
+**Legal Basis and Worker Consent**
+Under GDPR (and equivalent frameworks), continuous AI monitoring of employees requires a lawful basis — typically *legitimate interest* — and workers must be clearly informed via a written privacy notice detailing: what is collected, how long it is retained, who can access it, and their right to object. A record of this notification is stored per employee.
+
+**Pseudonymisation**
+Worker identifiers in the database (`W1`, `W2`, …) are pseudonyms. The mapping from pseudonym to real employee name is stored in a separate, access-controlled `IdentityRegistry` (or the HR system). Dashboard users see pseudonyms by default; only roles with explicit permission can request the mapping, and every such access is written to an audit log.
+
+```
+IdentityRegistry  (separate, access-controlled store)
+├── worker_id    String   — "W1"      (FK → Worker.worker_id)
+├── real_name    String   — "Jane Smith"
+├── employee_no  String
+└── created_at   DateTime
+```
+
+**Data Retention**
+Raw events are retained for a rolling 90-day window by default (configurable per site policy). A nightly job archives data older than the retention window to cold storage (e.g. S3 Glacier) and purges it from the live database. Daily aggregate summaries may be kept indefinitely for trend analysis without retaining individual event records.
+
+**Access Control and Audit Logging**
+Role-based access control limits what each role can query:
+
+| Role | Access |
+|---|---|
+| Line Manager | Their team's utilisation metrics (pseudonymised) |
+| Plant Manager | All workers on their site (pseudonymised) |
+| Executive | Cross-site aggregate summaries only |
+| HR / DPO | Full de-anonymised records, with full audit trail |
+
+Every access to de-anonymised data is written to an immutable audit log (`accessor`, `timestamp`, `record_accessed`).
+
+**Ethical Guardrails**
+Metrics should inform operational decisions, not be used punitively in isolation:
+- Display team-level aggregates on the primary dashboard; individual worker drill-down sits behind an additional permission layer.
+- Show confidence scores alongside metrics so managers understand the model's uncertainty.
+- Provide a formal dispute process where workers can flag AI-generated records they believe are incorrect — flagged events feed the active-learning loop for model retraining.
+- Conduct a Data Protection Impact Assessment (DPIA) before deployment, particularly in jurisdictions with strong worker-monitoring regulations (e.g. Germany's *Betriebsverfassungsgesetz*, France's CNIL guidelines).
+
+**Privacy Controls by Layer**
+
+| Layer | Control |
+|---|---|
+| Camera / Edge | Raw video never transmitted; only derived labels sent |
+| Transport | TLS-encrypted HTTPS between edge device and backend |
+| Database | Pseudonymised IDs; identity mapping in separate store |
+| API | RBAC enforced on all endpoints |
+| Frontend | Role-gated views; team aggregates displayed by default |
+| Ops | 90-day retention window; immutable access audit log |
