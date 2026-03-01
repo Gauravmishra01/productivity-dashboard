@@ -7,6 +7,7 @@ A full-stack web application that processes AI-generated CCTV activity data from
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
+- [Deployment](#deployment)
 - [Running the Project](#running-the-project)
 - [Database Schema](#database-schema)
 - [Metric Definitions](#metric-definitions)
@@ -61,6 +62,51 @@ A full-stack web application that processes AI-generated CCTV activity data from
 **Backend API** — An Express server that receives events, deduplicates them via a composite unique key, persists them to SQLite, and computes derived metrics on demand.
 
 **Dashboard** — A Next.js frontend that polls the API, displays per-worker utilisation/output, and provides an admin control to reseed test data.
+
+---
+
+## Deployment
+
+The application is deployed across three free-tier cloud services:
+
+| Layer | Platform | URL |
+|---|---|---|
+| **Frontend** | [Vercel](https://vercel.com) | *(set after Vercel deploy)* |
+| **Backend** | [Render](https://render.com) | https://productivity-dashboard-su5r.onrender.com |
+| **Database** | [Neon](https://neon.tech) | PostgreSQL — `neondb` on `us-east-1` |
+
+### How it fits together
+
+```
+Browser
+  │
+  ▼
+Vercel (Next.js frontend)
+  │  NEXT_PUBLIC_API_URL
+  ▼
+Render (Express backend — Docker)
+  │  DATABASE_URL
+  ▼
+Neon (PostgreSQL — serverless)
+```
+
+### Environment Variables
+
+**Render (Backend)**
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | Neon connection string (PostgreSQL) |
+| `NODE_ENV` | `production` |
+| `FRONTEND_URL` | Your Vercel app URL (for CORS) |
+
+**Vercel (Frontend)**
+
+| Variable | Value |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | `https://productivity-dashboard-su5r.onrender.com` |
+
+> **Note:** Render's free tier spins down after 15 minutes of inactivity. The first request after sleep may take up to 50 seconds to respond.
 
 ---
 
